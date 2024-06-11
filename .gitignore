@@ -1,0 +1,5 @@
+wandb_key.txt
+HW3/codes/pretrained/*
+HW3/codes/tokenizer/*
+HW3/codes/train_test/*
+**/__pycache__/*

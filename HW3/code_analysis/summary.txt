@@ -1,0 +1,198 @@
+########################
+# Additional Files
+########################
+# run.sh
+# test_bpe.py
+# output_Tfmr-finetune_top-p_1.0_0.9.txt
+# tokenizer
+# output_Tfmr-scratch_random_0.7_1.0.txt
+# .DS_Store
+# random_sel.py
+# output_Tfmr-scratch_top-p_1.0_0.9.txt
+# output_Tfmr-finetune_top-p_0.7_0.9.txt
+# output_Tfmr-finetune_random_0.7_1.0.txt
+# requirements.txt
+# train_test
+# data
+# output_Tfmr-finetune_random_1.0_1.0.txt
+# pretrained
+# random_sel.txt
+# output_Tfmr-scratch_random_1.0_1.0.txt
+# run_colab.ipynb
+# config_24.json
+# config_6.json
+# __pycache__
+# output_None_random_1_1.0.txt
+# output.txt
+# config_16.json
+# output_Tfmr-scratch_top-p_0.7_0.9.txt
+
+########################
+# Filled Code
+########################
+# ../codes/model_tfmr.py:1
+            torch.tril(torch.ones((max_positions, max_positions), dtype=torch.bool)).view(1, 1, max_positions, max_positions)
+
+# ../codes/model_tfmr.py:2
+        # attn_weights = QK' / sqrt(d)
+        attn_weights = query.matmul(key.transpose(-2, -1)) # shape: (batch_size, num_attn_heads, sequence_length, sequence_length)
+        query_length, key_length = query.size(-2), key.size(-2)
+        causal_mask = self.bias[:, :, key_length-query_length:key_length, :key_length]
+        # attn_output = softmax(QK' / sqrt(d)) V
+        attn_weights = F.softmax(attn_weights, dim=-1)
+        attn_output = attn_weights.matmul(value)
+
+# ../codes/model_tfmr.py:3
+        return tensor.view(tensor.size(0), tensor.size(1), num_heads, attn_head_size).transpose(1, 2)
+
+# ../codes/model_tfmr.py:4
+        tensor = tensor.transpose(1, 2).contiguous()
+        return tensor.view(tensor.size(0), tensor.size(1), num_heads * attn_head_size)
+
+# ../codes/model_tfmr.py:5
+        # HINT: You can refer to Page 39 in lecture 8 for more details
+        residual = attn_output + residual
+        hidden_states = self.mlp(self.ln_2(residual)) + residual
+
+# ../codes/model_tfmr.py:6
+        position_ids = torch.arange(past_length, input_shape[-1]+past_length, dtype=torch.long, device=device).unsqueeze(0)
+        position_embeds = self.wpe(position_ids)
+
+# ../codes/model_tfmr.py:7
+            shifted_logits = lm_logits[:, :-1, :].contiguous()
+            shifted_labels = labels[:, 1:].contiguous()
+            # reshape for calculating loss
+            reshaped_logits = shifted_logits.view(-1, shifted_logits.size(-1))
+            reshaped_labels = shifted_labels.view(-1)
+            # mask the loss of [PAD] token except for the last token
+            loss_mask = torch.ones_like(shifted_labels)
+            loss_mask[shifted_labels == PAD_ID] = 0
+            eof_ids = loss_mask.sum(dim=-1) # 前面全是1，后面全是0，1的个数就是第一个0的位置
+            loss_mask[torch.arange(loss_mask.size(0)), eof_ids] = 1
+            # calculate loss
+            loss = ce_loss_fct(reshaped_logits, reshaped_labels)
+            loss = loss.view_as(shifted_labels) * loss_mask
+            loss = loss.sum(dim=-1) / loss_mask.sum(dim=-1)
+            loss = loss.mean()
+
+# ../codes/model_tfmr.py:8
+                        descending_logits, descending_indices = logits.sort(descending=True, dim=-1)
+                        cumsum_probs = descending_logits.softmax(dim=-1).cumsum(dim=-1)
+                        descending_indices_remove = cumsum_probs > top_p
+                        descending_indices_remove[:, 1:] = descending_indices_remove[:, :-1].clone()
+                        descending_indices_remove[:, 0] = 0
+                        indices_remove = descending_indices_remove.scatter(dim=-1, index=descending_indices, src=descending_indices_remove)
+                        logits.masked_fill_(indices_remove, -float("inf"))
+
+# ../codes/main.py:1
+            tgt_ids = input_ids[:, 1:]
+            input_ids = input_ids[:, :-1]
+            loss_mask = torch.ones_like(tgt_ids)
+            loss_mask[tgt_ids == PAD_ID] = 0
+            eof_ids = loss_mask.sum(dim=-1)
+            loss_mask[torch.arange(loss_mask.size(0)), eof_ids] = 1
+            loss = ((loss.view_as(tgt_ids) * loss_mask).sum(dim=-1) / loss_mask.sum(dim=-1))
+
+
+########################
+# References
+########################
+
+########################
+# Other Modifications
+########################
+# _codes/model_tfmr.py -> ../codes/model_tfmr.py
+# 28 -         return x
+# 28 +         return x # output_size[-1] = self.nf
+# 43 -         self.embed_dim = config.hidden_size
+# 44 +         self.embed_dim = config.hidden_size  # d
+# 44 ?                                            +++++
+# 44 -         self.num_heads = config.num_attention_heads
+# 45 +         self.num_heads = config.num_attention_heads # h
+# 45 ?                                                    ++++
+# 52 -         self.scale_attn_weights = config.scale_attn_weights
+# 53 +         self.scale_attn_weights = config.scale_attn_weights # bool
+# 53 ?                                                            +++++++
+# 100 -         query = self._split_heads(query, self.num_heads, self.head_dim)
+# 106 +         query = self._split_heads(query, self.num_heads, self.head_dim) # size = (batch_size, num_heads, sequence_length, head_dim)
+# 202 -         input_ids,
+# 209 +         input_ids, # (batch_size, sequence_length)
+# 211 -         inputs_embeds = self.wte(input_ids)
+# 218 +         inputs_embeds = self.wte(input_ids) # (batch_size, sequence_length, hidden_size)
+# 223 -         hidden_states = inputs_embeds + position_embeds
+# 231 +         hidden_states = inputs_embeds + position_embeds # (batch_size, sequence_length, hidden_size)
+# 227 -         output_shape = input_shape + (hidden_states.size(-1),)
+# 235 +         output_shape = input_shape + (hidden_states.size(-1),) # (batch_size, sequence_length, hidden_size)
+# 270 -         input_ids,
+# 278 +         input_ids, # (batch_size, sequence_length)
+# 272 -         labels=None,
+# 280 +         labels=None, # (batch_size, sequence_length)
+# 281 -         hidden_states = transformer_outputs["last_hidden_state"]
+# 282 -         lm_logits = self.lm_head(hidden_states)
+# 289 +         hidden_states = transformer_outputs["last_hidden_state"] # (batch_size, sequence_length, hidden_size)
+# 290 +         lm_logits = self.lm_head(hidden_states) # (batch_size, sequence_length, vocab_size)
+# 334 +                     assert input_ids.shape == (32, 1)
+# _codes/main.py -> ../codes/main.py
+# 39 - parser.add_argument("--pretrain_dir", type=str, default="None",
+# 39 ?                                                         -    -
+# 39 + parser.add_argument("--pretrain_dir", type=str, default=None,
+# 49 + args = parser.parse_args()
+# 50 +
+# 51 + if args.test is None:
+# 52 +     import wandb
+# 53 +     wandb.init(
+# 54 +         project="transformer",
+# 55 +         config={
+# 56 +             "batch_size": args.batch_size,
+# 57 +             "decode_strategy": args.decode_strategy,
+# 58 +             "temperature": args.temperature,
+# 59 +             "top_p": args.top_p
+# 60 +         },
+# 61 +         name=f'{args.name}'
+# 62 +     )
+# 71 -
+# 155 -         config_path = os.path.join(pretrained_dir, "config.json")
+# 171 +         # config_path = os.path.join(pretrained_dir, "config.json")
+# 171 ?        ++
+# 172 +         config_path = os.path.join(pretrained_dir, f"config_{args.test}.json") if args.test is not None else os.path.join(pretrained_dir, "config.json")
+# 187 -     args = parser.parse_args()
+# 226 +             if args.name == "Tfmr-finetune-1-6-12":
+# 227 +                 new_h = nn.ModuleList(nn.Sequential() for _ in range(3))
+# 228 +                 new_h[0] = model.transformer.h[0]
+# 229 +                 new_h[1] = model.transformer.h[5]
+# 230 +                 new_h[2] = model.transformer.h[11]
+# 231 +                 model.transformer.h = new_h
+# 244 -                 with open(os.path.join(args.train_dir, "config.json"), "w") as f:
+# 266 +                 with open(os.path.join(args.train_dir, f"config_{args.name}.json"), "w") as f:
+# 266 ?                                                        +       ++++++++++++
+# 276 +
+# 277 +                 wandb.log({
+# 278 +                     "train_loss": train_loss,
+# 279 +                     "val_loss": val_loss,
+# 280 +                     "val_ppl": val_ppl
+# 281 +                 })
+# 285 +
+# 286 +         if args.name == "Tfmr-finetune-1-6-12":
+# 287 +             test_loss, test_ppl = fast_evaluate(model=model, data=data["test"], batch_size=args.batch_size, PAD_ID=PAD_ID, device=device)
+# 288 +             print("        test_set, perplexity {:.2f}".format(test_ppl))
+# 289 +             result = model.inference(device=device, PAD_ID=PAD_ID,
+# 290 +                 batch_size=args.batch_size, maxlen=args.maxlen, decode_strategy=args.decode_strategy, temperature=args.temperature, top_p=args.top_p)
+# 291 +             with open(f"output_Tfmr-finetune-1-6-12_{args.decode_strategy}_{args.temperature}_{args.top_p}.txt", "a") as fout:
+# 292 +                 for k, output in enumerate(result):
+# 293 +                     out = tokenizer.decode(output)
+# 294 +                     print(k, out)
+# 295 +                     fout.write(out + "\n")
+# 296 +             eval_result = evaluate(gen_ids=result, truth_ids=data_remove_pad["test"])
+# 297 +             print("        test_set, forward BLEU-4 {:.3f}, backward BLEU-4 {:.3f}, harmonic BLEU-4 {:.3f}".format(eval_result["fw-bleu-4"], eval_result["bw-bleu-4"], eval_result["fw-bw-bleu-4"]))
+# 298 +             print(f"        test_set, write inference results to output_{args.decode_strategy}.txt")
+# 299 +             with open(f"output_Tfmr-finetune-1-6-12_{args.decode_strategy}_{args.temperature}_{args.top_p}.txt", "a") as fout:
+# 300 +                 fout.write("test_set, perplexity {:.2f}\n".format(test_ppl))
+# 301 +                 fout.write("test_set, forward BLEU-4 {:.3f}, backward BLEU-4 {:.3f}, harmonic BLEU-4 {:.3f}\n".format(eval_result["fw-bleu-4"], eval_result["bw-bleu-4"], eval_result["fw-bw-bleu-4"]))
+# 266 -         with open(f"output_{args.decode_strategy}.txt", "w") as fout:
+# 266 ?                                                          ^
+# 311 +         with open(f"output_{args.test}_{args.decode_strategy}_{args.temperature}_{args.top_p}.txt", "a") as fout:
+# 311 ?                                  ++++++++++++                ++++++++++++++++++++++++++++++++        ^
+# 319 +         with open(f"output_{args.test}_{args.decode_strategy}_{args.temperature}_{args.top_p}.txt", "a") as fout:
+# 320 +             fout.write("test_set, perplexity {:.2f}\n".format(test_ppl))
+# 321 +             fout.write("test_set, forward BLEU-4 {:.3f}, backward BLEU-4 {:.3f}, harmonic BLEU-4 {:.3f}\n".format(eval_result["fw-bleu-4"], eval_result["bw-bleu-4"], eval_result["fw-bw-bleu-4"]))
+

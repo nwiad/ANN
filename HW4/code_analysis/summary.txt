@@ -1,0 +1,275 @@
+########################
+# Additional Files
+########################
+# pics
+# .DS_Store
+# results_mlp
+# tensorboard_process.py
+# results_remove
+# results
+# runs_mlp
+# runs_remove
+# __pycache__
+# runs
+# data
+# inception
+# run.sh
+
+########################
+# Filled Code
+########################
+# ../codes/GAN/GAN.py:1
+        if os.getenv('MLP') == '1':
+            print('MLP')
+            self.decoder = nn.Sequential(
+                nn.Linear(self.latent_dim, 4 * self.hidden_dim),
+                nn.BatchNorm1d(4 * self.hidden_dim),
+                nn.ReLU(True),
+                nn.Linear(4 * self.hidden_dim, 2 * self.hidden_dim),
+                nn.BatchNorm1d(2 * self.hidden_dim),
+                nn.ReLU(True),
+                nn.Linear(2 * self.hidden_dim, self.hidden_dim),
+                nn.BatchNorm1d(self.hidden_dim),
+                nn.ReLU(True),
+                nn.Linear(self.hidden_dim, self.num_channels * 32 * 32),
+                nn.Tanh()
+            )
+        elif os.getenv('remove_bn') == '1':
+            print('remove BatchNorm2d')
+            self.decoder = nn.Sequential(
+                nn.ConvTranspose2d(self.latent_dim,  4 * self.hidden_dim, 4, 1, 0, bias=False),
+                # nn.BatchNorm2d(4 * self.hidden_dim),
+                nn.ReLU(True),
+                nn.ConvTranspose2d(4 * self.hidden_dim, 2 * self.hidden_dim, 4, 2, 1, bias=False),
+                # nn.BatchNorm2d(2 * self.hidden_dim),
+                nn.ReLU(True),
+                nn.ConvTranspose2d(2 * self.hidden_dim, self.hidden_dim, 4, 2, 1, bias=False),
+                # nn.BatchNorm2d(self.hidden_dim),
+                nn.ReLU(True),
+                nn.ConvTranspose2d(self.hidden_dim, self.num_channels, 4, 2, 1, bias=False),
+                nn.Tanh()
+            )
+        else:
+            self.decoder = nn.Sequential(
+                nn.ConvTranspose2d(self.latent_dim,  4 * self.hidden_dim, 4, 1, 0, bias=False),
+                nn.BatchNorm2d(4 * self.hidden_dim),
+                nn.ReLU(True),
+                nn.ConvTranspose2d(4 * self.hidden_dim, 2 * self.hidden_dim, 4, 2, 1, bias=False),
+                nn.BatchNorm2d(2 * self.hidden_dim),
+                nn.ReLU(True),
+                nn.ConvTranspose2d(2 * self.hidden_dim, self.hidden_dim, 4, 2, 1, bias=False),
+                nn.BatchNorm2d(self.hidden_dim),
+                nn.ReLU(True),
+                nn.ConvTranspose2d(self.hidden_dim, self.num_channels, 4, 2, 1, bias=False),
+                nn.Tanh()
+            )
+
+# ../codes/GAN/trainer.py:1
+        output_D_real = self._netD(real_imgs)
+        loss_D_real = BCE_criterion(output_D_real, torch.ones(output_D_real.size(0), device=self._device))
+        D_x = output_D_real.mean().item()
+        loss_D_real.backward()
+
+# ../codes/GAN/trainer.py:2
+        output_D_fake = self._netD(fake_imgs.detach())
+        loss_D_fake = BCE_criterion(output_D_fake, torch.zeros(output_D_fake.size(0), device=self._device))
+        D_G_z1 = output_D_fake.mean().item()
+        loss_D_fake.backward()
+
+# ../codes/GAN/trainer.py:3
+        output_G = self._netD(fake_imgs)
+        loss_G = BCE_criterion(output_G, torch.ones(output_G.size(0), device=self._device))
+        D_G_z2 = output_G.mean().item()
+
+
+########################
+# References
+########################
+
+########################
+# Other Modifications
+########################
+# _codes/GAN/main.py -> ../codes/GAN/main.py
+# 15 -     parser.add_argument('--do_train', action='store_true')
+# 15 +     parser.add_argument('--do_train', action='store_true') # 是否训练
+# 15 ?                                                           +++++++
+# 17 -     parser.add_argument('--latent_dim', default=16, type=int)
+# 17 +     parser.add_argument('--latent_dim', default=16, type=int) # 隐变量维度
+# 17 ?                                                              ++++++++
+# 18 -     parser.add_argument('--generator_hidden_dim', default=16, type=int)
+# 18 +     parser.add_argument('--generator_hidden_dim', default=16, type=int) # 生成器隐藏层维度
+# 18 ?                                                                        +++++++++++
+# 19 -     parser.add_argument('--discriminator_hidden_dim', default=16, type=int)
+# 19 +     parser.add_argument('--discriminator_hidden_dim', default=16, type=int) # 判别器隐藏层维度
+# 19 ?                                                                            +++++++++++
+# 20 -     parser.add_argument('--batch_size', default=64, type=int)
+# 20 +     parser.add_argument('--batch_size', default=64, type=int) # 批大小
+# 20 ?                                                              ++++++
+# 21 -     parser.add_argument('--num_training_steps', default=5000, type=int)
+# 21 +     parser.add_argument('--num_training_steps', default=5000, type=int) # 训练步数
+# 21 ?                                                                        +++++++
+# 22 -     parser.add_argument('--logging_steps', type=int, default=10)
+# 22 +     parser.add_argument('--logging_steps', type=int, default=10) # 记录步数
+# 22 ?                                                                 +++++++
+# 23 -     parser.add_argument('--saving_steps', type=int, default=1000)
+# 23 +     parser.add_argument('--saving_steps', type=int, default=1000) # 保存步数
+# 23 ?                                                                  +++++++
+# 24 -     parser.add_argument('--learning_rate', default=0.0002, type=float)
+# 24 +     parser.add_argument('--learning_rate', default=0.0002, type=float) # 学习率
+# 24 ?                                                                       ++++++
+# 26 -     parser.add_argument('--data_dir', default='../data', type=str, help='The path of the data directory')
+# 26 +     parser.add_argument('--data_dir', default='../data', type=str, help='The path of the data directory') # 数据集路径
+# 26 ?                                                                                                          ++++++++
+# 27 -     parser.add_argument('--ckpt_dir', default='results', type=str, help='The path of the checkpoint directory')
+# 27 +     parser.add_argument('--ckpt_dir', default='results', type=str, help='The path of the checkpoint directory') # 检查点路径
+# 27 ?                                                                                                                ++++++++
+# 28 -     parser.add_argument('--log_dir', default='./runs', type=str)
+# 28 +     parser.add_argument('--log_dir', default='./runs', type=str) # 日志路径
+# 28 ?                                                                 +++++++
+# 31 +     if not os.path.exists("./pics/"):
+# 32 +         os.makedirs("./pics/")
+# 33 +
+# 31 -     config = 'z-{}_batch-{}_num-train-steps-{}'.format(args.latent_dim, args.batch_size, args.num_training_steps)
+# 34 +     # config = 'z-{}_batch-{}_num-train-steps-{}'.format(args.latent_dim, args.batch_size, args.num_training_steps)
+# 34 ?    ++
+# 35 +     config = 'latent_{}_hidden_{}_steps_{}'.format(args.latent_dim, args.generator_hidden_dim, args.num_training_steps)
+# 74 -     print("FID score: {:.3f}".format(fid), flush=True)
+# 78 +     print("FID score: {:.3f}".format(fid), flush=True)
+# 78 ?                                                       +
+# 79 +
+# 80 +     from torchvision.utils import make_grid, save_image
+# 81 +     # linear interpolation
+# 82 +     if os.getenv('linear_interpolation') == '1':
+# 83 +         print('linear interpolation')
+# 84 +         all_img_list = []
+# 85 +         for _ in range(5):
+# 86 +             z1 = torch.randn(1, netG.latent_dim, 1, 1, device=device)
+# 87 +             z2 = torch.randn(1, netG.latent_dim, 1, 1, device=device)
+# 88 +             K = 9
+# 89 +             img_list = []
+# 90 +             for i in range(K + 1): # i = 0, 1, ..., K(=9)
+# 91 +                 z = z1 + (z2 - z1) * i / K # z = z1, z1 + (z2 - z1) / K, ..., z2
+# 92 +                 img_list.append(netG.forward(z))
+# 93 +             all_img_list.append(torch.cat(img_list, 0))
+# 94 +         output_imgs = make_grid(torch.cat(all_img_list, 0), nrow=K + 1) * 0.5 + 0.5
+# 95 +         save_image(output_imgs, "./pics/" + config + "_interpolation.png")
+# 96 +
+# 97 +     # random generation
+# 98 +     if os.getenv('random_generation') == '1':
+# 99 +         print('random generation')
+# 100 +         all_img_list = []
+# 101 +         for _ in range(5):
+# 102 +             img_list = []
+# 103 +             for _ in range(10):
+# 104 +                 z = torch.randn(1, netG.latent_dim, 1, 1, device=device)
+# 105 +                 img_list.append(netG.forward(z))
+# 106 +             all_img_list.append(torch.cat(img_list, 0))
+# 107 +         output_imgs = make_grid(torch.cat(all_img_list, 0), nrow=10) * 0.5 + 0.5
+# 108 +         save_image(output_imgs, "./pics/" + config + "_random_generation.png")
+# _codes/GAN/GAN.py -> ../codes/GAN/GAN.py
+# 83 +         if os.getenv('MLP') == '1':
+# 84 +             z = z.squeeze()
+# 85 +             return self.decoder(z).view(-1, self.num_channels, 32, 32)
+# 110 +
+# 111 +         if os.getenv('MLP') == '1':
+# 112 +             print('MLP')
+# 66 -         self.clf = nn.Sequential(
+# 113 +             self.clf = nn.Sequential(
+# 113 ? ++++
+# 114 +                 nn.Linear(self.num_channels * 32 * 32, self.hidden_dim),
+# 115 +                 nn.LeakyReLU(0.2, inplace=True),
+# 116 +                 nn.Linear(self.hidden_dim, 2 * self.hidden_dim),
+# 117 +                 nn.BatchNorm1d(2 * self.hidden_dim),
+# 118 +                 nn.LeakyReLU(0.2, inplace=True),
+# 119 +                 nn.Linear(2 * self.hidden_dim, 4 * self.hidden_dim),
+# 120 +                 nn.BatchNorm1d(4 * self.hidden_dim),
+# 121 +                 nn.LeakyReLU(0.2, inplace=True),
+# 122 +                 nn.Linear(4 * self.hidden_dim, 1),
+# 123 +                 nn.Sigmoid()
+# 124 +             )
+# 125 +         elif os.getenv('remove_bn') == '1':
+# 126 +             print('remove BatchNorm2d')
+# 127 +             self.clf = nn.Sequential(
+# 67 -             # input is (num_channels) x 32 x 32
+# 128 +                 # input is (num_channels) x 32 x 32
+# 128 ? ++++
+# 68 -             nn.Conv2d(num_channels, hidden_dim, 4, 2, 1, bias=False),
+# 129 +                 nn.Conv2d(num_channels, hidden_dim, 4, 2, 1, bias=False),
+# 129 ? ++++
+# 69 -             nn.LeakyReLU(0.2, inplace=True),
+# 130 +                 nn.LeakyReLU(0.2, inplace=True),
+# 130 ? ++++
+# 70 -             # state size. (hidden_dim) x 16 x 16
+# 131 +                 # state size. (hidden_dim) x 16 x 16
+# 131 ? ++++
+# 71 -             nn.Conv2d(hidden_dim, hidden_dim * 2, 4, 2, 1, bias=False),
+# 132 +                 nn.Conv2d(hidden_dim, hidden_dim * 2, 4, 2, 1, bias=False),
+# 132 ? ++++
+# 72 -             nn.BatchNorm2d(hidden_dim * 2),
+# 133 +                 # nn.BatchNorm2d(hidden_dim * 2),
+# 133 ?            ++++++
+# 73 -             nn.LeakyReLU(0.2, inplace=True),
+# 134 +                 nn.LeakyReLU(0.2, inplace=True),
+# 134 ? ++++
+# 74 -             # state size. (hidden_dim*2) x 8 x 8
+# 135 +                 # state size. (hidden_dim*2) x 8 x 8
+# 135 ? ++++
+# 75 -             nn.Conv2d(hidden_dim * 2, hidden_dim * 4, 4, 2, 1, bias=False),
+# 136 +                 nn.Conv2d(hidden_dim * 2, hidden_dim * 4, 4, 2, 1, bias=False),
+# 136 ? ++++
+# 76 -             nn.BatchNorm2d(hidden_dim * 4),
+# 137 +                 # nn.BatchNorm2d(hidden_dim * 4),
+# 137 ?            ++++++
+# 77 -             nn.LeakyReLU(0.2, inplace=True),
+# 138 +                 nn.LeakyReLU(0.2, inplace=True),
+# 138 ? ++++
+# 78 -             # state size. (hidden_dim*4) x 4 x 4
+# 139 +                 # state size. (hidden_dim*4) x 4 x 4
+# 139 ? ++++
+# 79 -             nn.Conv2d(hidden_dim * 4, 1, 4, 1, 0, bias=False),
+# 140 +                 nn.Conv2d(hidden_dim * 4, 1, 4, 1, 0, bias=False),
+# 140 ? ++++
+# 80 -             nn.Sigmoid()
+# 141 +                 nn.Sigmoid()
+# 141 ? ++++
+# 81 -         )
+# 142 +             )
+# 142 ? ++++
+# 143 +         elif os.getenv('replace') == '1': # replace LeakyReLU with ReLU
+# 144 +             print('replace LeakyReLU with ReLU')
+# 145 +             self.clf = nn.Sequential(
+# 146 +                 # input is (num_channels) x 32 x 32
+# 147 +                 nn.Conv2d(num_channels, hidden_dim, 4, 2, 1, bias=False),
+# 148 +                 nn.ReLU(inplace=True),
+# 149 +                 # state size. (hidden_dim) x 16 x 16
+# 150 +                 nn.Conv2d(hidden_dim, hidden_dim * 2, 4, 2, 1, bias=False),
+# 151 +                 nn.BatchNorm2d(hidden_dim * 2),
+# 152 +                 nn.ReLU(inplace=True),
+# 153 +                 # state size. (hidden_dim*2) x 8 x 8
+# 154 +                 nn.Conv2d(hidden_dim * 2, hidden_dim * 4, 4, 2, 1, bias=False),
+# 155 +                 nn.BatchNorm2d(hidden_dim * 4),
+# 156 +                 nn.ReLU(inplace=True),
+# 157 +                 # state size. (hidden_dim*4) x 4 x 4
+# 158 +                 nn.Conv2d(hidden_dim * 4, 1, 4, 1, 0, bias=False),
+# 159 +                 nn.Sigmoid()
+# 160 +             )
+# 161 +         else:
+# 162 +             self.clf = nn.Sequential(
+# 163 +                 # input is (num_channels) x 32 x 32
+# 164 +                 nn.Conv2d(num_channels, hidden_dim, 4, 2, 1, bias=False),
+# 165 +                 nn.LeakyReLU(0.2, inplace=True),
+# 166 +                 # state size. (hidden_dim) x 16 x 16
+# 167 +                 nn.Conv2d(hidden_dim, hidden_dim * 2, 4, 2, 1, bias=False),
+# 168 +                 nn.BatchNorm2d(hidden_dim * 2),
+# 169 +                 nn.LeakyReLU(0.2, inplace=True),
+# 170 +                 # state size. (hidden_dim*2) x 8 x 8
+# 171 +                 nn.Conv2d(hidden_dim * 2, hidden_dim * 4, 4, 2, 1, bias=False),
+# 172 +                 nn.BatchNorm2d(hidden_dim * 4),
+# 173 +                 nn.LeakyReLU(0.2, inplace=True),
+# 174 +                 # state size. (hidden_dim*4) x 4 x 4
+# 175 +                 nn.Conv2d(hidden_dim * 4, 1, 4, 1, 0, bias=False),
+# 176 +                 nn.Sigmoid()
+# 177 +             )
+# 180 +         if os.getenv('MLP') == '1':
+# 181 +             x = x.view(-1, self.num_channels * 32 * 32).contiguous()
+

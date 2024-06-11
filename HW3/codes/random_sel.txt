@@ -1,0 +1,108 @@
+random t=1.0 Tfmr-scratch
+Long view of a city filled with people laying down .
+A small airplane getting ready to take off through stop .
+A white , blue and green bus parked on a street .
+A bench is computers sitting next to a decorative coveredscape .
+Airplanes are visible across the ground behind the gate .
+A train car traveling down an intersection with someone ' s candles .
+A statue is next to a man on a bicycle .
+A cat balancing intored baby giraffe on the edge of the .
+A yellow traffic light sitting in the middle of a field , with lots of people in the background .
+A building looking at a bus stop with another bus .
+
+random t=1.0 Tfmr-finetune
+Long bus parked on the side of the road that could be things with picnic tables .
+A small airplane getting ready to take off at stop light .
+A white , blue and orange bus parked on a lot .
+A bench topped with a chair and some decorative accents .
+Airplanes are seen across the ground behind a blue sky .
+A train car driving down the road with someone jumping off .
+A statue of a man wearing a hat , hats being held by a water bottle .
+A cat balancing inside of a simple blue bowl from the front of a red table .
+A yellow traffic light sitting on the side of a road , with the buildings in the background .
+A building looking at a bus and knocked down a street .
+
+random t=0.7 Tfmr-scratch
+A giraffe is standing around in the grass with trees in the background .
+A small airplane getting ready to take off into the ocean .
+A white bus passing through traffic during the day at the night .
+A bench sitting in front of a rock wall coveredscape .
+A white bus driving past a parking lot filled with trees .
+A red bus driving down a street next to a forest .
+A statue is sitting on a bench reading a newspaper .
+A double decker bus is is parked on the side of the street .
+A yellow fire hydrant sitting in the middle of a street .
+A woman looking at a bus stop with a dog .
+
+random t=0.7 Tfmr-finetune
+A giraffe is standing next to a tree in a field .
+A small airplane is flying over a grass covered field .
+A white , blue and white bus parked on a street .
+A bench sitting in front of a stone wall with a tree in the distance .
+A white bus driving past a row of parked cars .
+A red bus driving down a street next to a yellow bus stop .
+A statue of a man sitting on top of a wooden bench .
+A double decker bus is stopped at a bus stop .
+A yellow fire hydrant sitting in the middle of a street corner .
+A woman looking at a bus and knocked down a street .
+
+top-p=0.9 t=1.0 Tfmr-scratch
+A giraffe is standing next to a tree in a field .
+A small airplane is flying over a grass covered field .
+A white , blue and white bus parked on a street .
+A bench sitting in front of a stone wall with a tree in the distance .
+A white bus driving past a row of parked cars .
+A red bus driving down a street next to a yellow bus stop .
+A man is standing on the ground next to a sheep .
+A double decker bus is stopped at a bus stop .
+A yellow fire hydrant sitting in the middle of a street corner .
+A woman walking down a street with her legs crossed .
+
+top-p=0.9 t=1.0 Tfmr-finetune
+A giraffe is standing next to a tree in a field .
+A small airplane is flying over a grass covered field .
+A white , blue and white bus parked on a street .
+A bench sitting in front of a stone wall with a tree in the distance .
+A white bus driving past a row of parked cars .
+A red bus driving down a street next to a yellow bus stop .
+A man is standing on the ground next to a sheep .
+A double decker bus is stopped at a bus stop .
+A yellow fire hydrant sitting in the middle of a street corner .
+A woman walking down a street with her legs crossed .
+
+top-p=0.9 t=0.7 Tfmr-scratch
+A giraffe is standing next to a tree in a field .
+A small airplane is flying over a grass covered field .
+A white , blue and white bus parked on a street .
+A bench sitting in front of a stone wall with a tree in the distance .
+A white bus driving past a row of parked cars .
+A red bus driving down a street next to a yellow bus stop .
+A man is standing on the ground next to a sheep .
+A double decker bus is stopped at a bus stop .
+A yellow fire hydrant sitting in the middle of a street corner .
+A woman walking down a street with her legs crossed .
+
+top-p=0.9 t=0.7 Tfmr-finetune
+A giraffe is standing next to a tree in a field .
+A small airplane is flying over a grass covered field .
+A white , blue and white bus parked on a street .
+A bench sitting in front of a stone wall with a tree in the distance .
+A white bus driving past a row of parked cars .
+A red bus driving down a street next to a yellow bus stop .
+A man is standing on the ground next to a sheep .
+A double decker bus is stopped at a bus stop .
+A yellow fire hydrant sitting in the middle of a street corner .
+A woman walking down a street with her legs crossed .
+
+random t=1.0 Tfmr-finetune-1-6-12
+A giraffe is standing next to a tree in a field .
+A small airplane is flying over a grass covered field .
+A white , blue and white bus parked on a street .
+A bench sitting in front of a stone wall with a tree in the distance .
+A white bus driving past a row of parked cars .
+A red bus driving down a street next to a yellow bus stop .
+A man is standing on the ground next to a sheep .
+A double decker bus is stopped at a bus stop .
+A yellow fire hydrant sitting in the middle of a street corner .
+A woman walking down a street with her legs crossed .
+

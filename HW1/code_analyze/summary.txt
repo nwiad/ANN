@@ -1,0 +1,246 @@
+########################
+# Additional Files
+########################
+# .DS_Store
+# results_1.txt
+# test_gpu_colab.ipynb
+# plot_focalloss.py
+# run_colab.ipynb
+# run.sh
+# __pycache__
+# plot.py
+# res
+# data
+# results.txt
+
+########################
+# Filled Code
+########################
+# ../codes/loss.py:1
+        squared_delta = np.square(input - target)
+        squared_norm = np.sum(squared_delta, axis=1)
+        return np.mean(squared_norm)
+
+# ../codes/loss.py:2
+        return 2 * (input - target) / input.shape[0]
+
+# ../codes/loss.py:3
+        exp_x = np.exp(input)
+        sum_exp_x = np.sum(exp_x, axis=1, keepdims=True)
+        softmax_x = exp_x / sum_exp_x # softmax(x) element-wise
+        ln_x = np.log(softmax_x) # log_softmax(x) element-wise
+        t_ln_x = np.multiply(ln_x, target) # muitlple ln_x and t element-wise
+        neg_sum_t_ln_x = -np.sum(t_ln_x, axis=1)
+        return np.mean(neg_sum_t_ln_x)
+
+# ../codes/loss.py:4
+        exp_x = np.exp(input)
+        sum_exp_x = np.sum(exp_x, axis=1, keepdims=True)
+        softmax_x = exp_x / sum_exp_x
+        return (softmax_x - target) / input.shape[0]
+
+# ../codes/loss.py:5
+        correct_labels = input[np.arange(input.shape[0]), np.argmax(target, axis=1)]
+        margins = np.maximum(0, input - correct_labels[:, np.newaxis] + self.margin)
+        margins[np.arange(input.shape[0]), np.argmax(target, axis=1)] = 0
+        self.margins = margins
+        return np.mean(np.sum(margins, axis=1))
+
+# ../codes/loss.py:6
+        # 计算梯度
+        grad = np.zeros_like(input)
+        grad[self.margins > 0] = 1
+        grad[np.arange(input.shape[0]), np.argmax(target, axis=1)] -= np.sum(grad, axis=1)
+        grad /= input.shape[0]
+        return grad
+
+# ../codes/loss.py:7
+        exp_x = np.exp(input)
+        sum_exp_x = np.sum(exp_x, axis=1, keepdims=True)
+        softmax_x = exp_x / sum_exp_x # softmax(x) element-wise
+        elem = (self.alpha * target + (1 - self.alpha) * (1 - target)) * np.power(1 - softmax_x, self.gamma) * target * np.log(softmax_x)
+        return -np.mean(np.sum(elem, axis=1))
+
+# ../codes/loss.py:8
+        exp_x = np.exp(input)
+        sum_exp_x = np.sum(exp_x, axis=1, keepdims=True)
+        softmax_x = exp_x / sum_exp_x
+        A = (self.alpha * target + (1 - self.alpha) * (1 - target)) * target * (np.power(1 - softmax_x, self.gamma) - self.gamma * softmax_x * np.power(1 - softmax_x, self.gamma - 1) * np.log(softmax_x))
+        return (softmax_x * np.sum(A, axis=1, keepdims=True) - A) / input.shape[0]
+
+# ../codes/layers.py:1
+        self._saved_for_backward(input)
+        mask = input > 0
+        pos = self.lambda_ * input * mask
+        neg = self.lambda_ * self.alpha * (np.exp(input) - 1) * (1 - mask)
+        return pos + neg
+
+# ../codes/layers.py:2
+        input = self._saved_tensor
+        mask = input > 0
+        pos = self.lambda_ * mask
+        neg = self.lambda_ * self.alpha * np.exp(input) * (1 - mask)
+        return grad_output * (pos + neg)
+
+# ../codes/layers.py:3
+        output = input / (1 + np.exp(-input))
+        self._saved_for_backward(output) # 保存输出
+        self.swish_input = input # 额外保存输入
+        return output
+
+# ../codes/layers.py:4
+        input = self.swish_input
+        output = self._saved_tensor
+        return grad_output * (output + (1 - output) / (1 + np.exp(-input)))
+
+# ../codes/layers.py:5
+        Tanh = np.tanh(np.sqrt(2 / np.pi) * (input + 0.044715 * np.power(input, 3)))
+        self._saved_for_backward(Tanh) # 保存 Tanh
+        self.gelu_input = input # 额外保存输入
+        return input * 0.5 * (1 + Tanh)
+
+# ../codes/layers.py:6
+        input = self.gelu_input
+        Tanh = self._saved_tensor
+        return grad_output * (
+            0.5 * (1 + Tanh) +
+            input * 0.5 * (1 - np.power(Tanh, 2)) * np.sqrt(2 / np.pi) * (1 + 0.134145 * np.power(input, 2))
+            )
+
+# ../codes/layers.py:7
+        self._saved_for_backward(input)
+        return input.dot(self.W) + self.b # [batch_size, in_num] * [in_num, out_num] = [batch_size, out_num]
+
+# ../codes/layers.py:8
+        input = self._saved_tensor
+        self.grad_W = input.T.dot(grad_output) # transpose([batch_size, in_num]) * [batch_size, out_num] = [in_num, out_num]
+        self.grad_b = np.sum(grad_output, axis=0) # [batch_size, out_num]
+        return grad_output.dot(self.W.T) # [batch_size, out_num] * transpose([in_num, out_num]) = [batch_size, in_num]
+
+
+########################
+# References
+########################
+
+########################
+# Other Modifications
+########################
+# _codes/run_mlp.py -> ../codes/run_mlp.py
+# 3 - from layers import Selu, Swish, Linear, Gelu
+# 3 + from layers import Selu, Swish, Linear, Gelu, Relu
+# 3 ?                                             ++++++
+# 5 - from solve_net import train_net, test_net
+# 5 + from solve_net import train_net, test_net, train_axis, train_loss, train_acc, test_axis, test_loss, test_acc
+# 8 + import argparse
+# 9 + parser = argparse.ArgumentParser()
+# 10 + parser.add_argument("--activation", type=str, default="Relu")
+# 11 + parser.add_argument("--loss", type=str, default="MSELoss")
+# 12 + parser.add_argument("--hidden_layers", type=int, default=1)
+# 13 + parser.add_argument("--epochs", type=int, default=20)
+# 14 + parser.add_argument("--alpha", type=float, default=-0.1)
+# 15 + activations = {"Selu": Selu, "Swish": Swish, "Gelu": Gelu, "Relu": Relu}
+# 16 + losses = {"MSELoss": MSELoss, "SoftmaxCrossEntropyLoss": SoftmaxCrossEntropyLoss, "HingeLoss": HingeLoss, "FocalLoss": FocalLoss}
+# 17 + current_activation = parser.parse_args().activation
+# 18 + current_loss = parser.parse_args().loss
+# 19 + current_hidden_layers = parser.parse_args().hidden_layers
+# 20 + current_epochs = parser.parse_args().epochs
+# 21 + assert current_hidden_layers in [1, 2], "hidden layers must be 1 or 2"
+# 22 + print(f"current activation is: {current_activation}")
+# 23 + print(f"current loss is: {current_loss}")
+# 24 + print(f"current number of hidden layers is: {current_hidden_layers}")
+# 25 + print(f"current number of epochs is: {current_epochs}")
+# 26 + activation_layer = activations[current_activation]
+# 27 + loss_func = losses[current_loss]
+# 34 + if current_hidden_layers == 1:
+# 14 - model.add(Linear('fc1', 784, 10, 0.01))
+# 14 ?                               ^
+# 35 +     model.add(Linear('fc1', 784, 128, 0.01))
+# 35 ? ++++                              ^^
+# 36 +     model.add(activation_layer('act1'))
+# 37 +     model.add(Linear('fc2', 128, 10, 0.01))
+# 38 + elif current_hidden_layers == 2:
+# 39 +     model.add(Linear('fc1', 784, 128, 0.01))
+# 40 +     model.add(activation_layer('act1'))
+# 41 +     model.add(Linear('fc2', 128, 64, 0.01))
+# 42 +     model.add(activation_layer('act2'))
+# 43 +     model.add(Linear('fc3', 64, 10, 0.01))
+# 16 - loss = MSELoss(name='loss')
+# 45 + loss = loss_func(name='loss', alpha=[parser.parse_args().alpha for _ in range(10)]) if current_loss == "FocalLoss" else loss_func(name='loss')
+# 25 -     'learning_rate': 0.0,
+# 54 +     'learning_rate': 0.01,
+# 54 ?                         +
+# 26 -     'weight_decay': 0.0,
+# 55 +     'weight_decay': 0.0005,
+# 55 ?                        +++
+# 27 -     'momentum': 0.0,
+# 27 ?                   ^
+# 56 +     'momentum': 0.9,
+# 56 ?                   ^
+# 29 -     'max_epoch': 100,
+# 58 +     'max_epoch': current_epochs, # default = 20
+# 30 -     'disp_freq': 50,
+# 59 +     'disp_freq': 150,
+# 59 ?                  +
+# 34 -
+# 63 + import time
+# 64 + training_time = 0.0
+# 67 +     start = time.time()
+# 37 -     train_net(model, loss, config, train_data, train_label, config['batch_size'], config['disp_freq'])
+# 68 +     train_net(model, loss, config, train_data, train_label, config['batch_size'], config['disp_freq'], epoch, final=epoch == config['max_epoch'] - 1)
+# 68 ?                                                                                                      +++++++++++++++++++++++++++++++++++++++++++++++
+# 69 +     end = time.time()
+# 70 +     training_time += end - start
+# 41 -         test_net(model, loss, test_data, test_label, config['batch_size'])
+# 74 +         test_net(model, loss, test_data, test_label, config['batch_size'], epoch + 1)
+# 74 ?                                                                          +++++++++++
+# 75 +
+# 76 +     if epoch == config['max_epoch'] - 1:
+# 77 +         LOG_INFO('Testing @ %d epoch...' % (epoch))
+# 78 +         test_net(model, loss, test_data, test_label, config['batch_size'], epoch + 1, final=True)
+# 79 +
+# 80 + with open("results.txt", 'a') as f:
+# 81 +     f.write(f'train_axis={str(train_axis)}\n')
+# 82 +     f.write(f'train_loss={str(train_loss)}\n')
+# 83 +     f.write(f'train_acc={str(train_acc)}\n')
+# 84 +     f.write(f'test_axis={str(test_axis)}\n')
+# 85 +     f.write(f'test_loss={str(test_loss)}\n')
+# 86 +     f.write(f'test_acc={str(test_acc)}\n')
+# 87 +     f.write(f"Training time==[{training_time},{training_time / config['max_epoch']}]\n")
+# 88 + from plot import plot
+# 89 + plot(current_activation, current_loss, current_hidden_layers, current_epochs, parser.parse_args().alpha, train_axis, test_axis, train_loss, test_loss, train_acc, test_acc)
+# _codes/loss.py -> ../codes/loss.py
+# 75 +         self.alpha = np.array(alpha) if alpha else np.array([0.1 for _ in range(10)])
+# 61 -         if alpha is None:
+# 62 -             self.alpha = [0.1 for _ in range(10)]
+# 77 +
+# _codes/solve_net.py -> ../codes/solve_net.py
+# 4 + train_axis, train_loss, train_acc = [], [], []
+# 5 + test_axis, test_loss, test_acc = [], [], []
+# 15 - def train_net(model, loss, config, inputs, labels, batch_size, disp_freq):
+# 17 + def train_net(model, loss, config, inputs, labels, batch_size, disp_freq, step, final=False):
+# 17 ?                                                                         +++++++++++++++++++
+# 22 +
+# 23 +     # the length of data_iterator
+# 24 +     length = len(inputs) // batch_size
+# 46 +         if final and iter_counter == length:
+# 47 +             with open("results.txt", "a") as f:
+# 48 +                 f.write(f"train_loss={np.mean(loss_list)}\ntrain_acc={np.mean(acc_list)}\n")
+# 49 +
+# 52 +             train_axis.append(step + iter_counter / length)
+# 53 +             train_loss.append(np.mean(loss_list))
+# 54 +             train_acc.append(np.mean(acc_list))
+# 58 +
+# 61 +
+# 48 - def test_net(model, loss, inputs, labels, batch_size):
+# 62 + def test_net(model, loss, inputs, labels, batch_size, step, final=False):
+# 62 ?                                                     +++++++++++++++++++
+# 75 +     test_axis.append(step)
+# 76 +     test_loss.append(np.mean(loss_list))
+# 77 +     test_acc.append(np.mean(acc_list))
+# 79 +     if final:
+# 80 +         with open("results.txt", "a") as f:
+# 81 +             f.write(f"test_loss={np.mean(loss_list)}\ntest_acc={np.mean(acc_list)}\n")
+# _codes/layers.py -> ../codes/layers.py
+# 53 +         self.lambda_ = 1.0507
+# 54 +         self.alpha = 1.6732
+

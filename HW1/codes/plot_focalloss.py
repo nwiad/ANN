@@ -1,0 +1,55 @@
+import matplotlib.pyplot as plt
+
+test_axis=[1, 6, 11, 16, 20]
+
+# loss
+plt.figure(figsize=(10, 5))
+
+# 0.1
+test_loss=[0.08134998408038596, 0.019270456982734895, 0.016791174684459412, 0.01557609795757059, 0.014860291111599581]
+plt.plot(test_axis, test_loss, label='alpha=0.1')
+# 0.25
+test_loss=[0.06979114505673106, 0.037216232698814695, 0.030783513889689126, 0.026533445138542836, 0.023698406644737293]
+plt.plot(test_axis, test_loss, label='alpha=0.25')
+# 0.5
+test_loss=[0.1025014875406662, 0.055665139638248616, 0.041075792209095525, 0.03403136056951581, 0.030681070318693493]
+plt.plot(test_axis, test_loss, label='alpha=0.5')
+# 0.75
+test_loss=[0.13504297095890463, 0.06597661118831626, 0.04922472016902049, 0.04069379069693441, 0.03681716940083814]
+plt.plot(test_axis, test_loss, label='alpha=0.75')
+# 0.9
+test_loss=[0.1559155000276745, 0.07294425588665698, 0.05108887724888063, 0.04380686281959949, 0.04079906264048636]
+plt.plot(test_axis, test_loss, label='alpha=0.9')
+# softmax
+test_loss=[0.32690052062970026, 0.15148067784844624, 0.11199202469440492, 0.09672391782927686, 0.08903127778112624]
+plt.plot(test_axis, test_loss, label='SoftmaxCrossEntropyLoss')
+
+plt.legend()
+plt.title('test_loss')
+plt.savefig('res/test_loss.png')
+
+# acc
+plt.figure(figsize=(10, 5))
+
+# 0.1
+test_acc=[0.7546, 0.8941, 0.909, 0.9146999999999998, 0.9181000000000001]
+plt.plot(test_axis, test_acc, label='alpha=0.1')
+# 0.25
+test_acc=[0.851, 0.9149000000000003, 0.9303999999999999, 0.9362000000000001, 0.9438000000000002]
+plt.plot(test_axis, test_acc, label='alpha=0.25')
+# 0.5
+test_acc=[0.8858, 0.9364, 0.9501999999999999, 0.9577000000000001, 0.9605000000000001]
+plt.plot(test_axis, test_acc, label='alpha=0.5')
+# 0.75
+test_acc=[0.8970999999999999, 0.9472000000000002, 0.9614999999999999, 0.9651000000000001, 0.9689000000000001]
+plt.plot(test_axis, test_acc, label='alpha=0.75')
+# 0.9
+test_acc=[0.9055, 0.9469000000000001, 0.9643, 0.9691000000000001, 0.9703]
+plt.plot(test_axis, test_acc, label='alpha=0.9')
+# softmax
+test_acc=[0.9059999999999999, 0.9546000000000002, 0.9666000000000002, 0.9712999999999999, 0.9724000000000003]
+plt.plot(test_axis, test_acc, label='SoftmaxCrossEntropyLoss')
+
+plt.legend()
+plt.title('test_acc')
+plt.savefig('res/test_acc.png')
