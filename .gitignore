@@ -3,3 +3,4 @@ HW3/codes/pretrained/*
 HW3/codes/tokenizer/*
 HW3/codes/train_test/*
 **/__pycache__/*
+.DS_Store
